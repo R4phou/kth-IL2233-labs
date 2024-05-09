@@ -114,9 +114,58 @@ struct t_pos{
  * @param assignment: output cluster assignment for each sample as a list of positions t_pos[n_samples]
  * @param lr: learning rate
  * @param sigma: rate that controls the weight update
+ * 
+ * There are 5 steps in the SOM algorithm:
+ * 1. Initialize the weights with some small random numbers
+ * 2. Competition: Each input will find its best matching unit using the Euclidean distance
+ * 3. Cooperation: Update the weights of the best matching unit and its neighbors
+ * 4. Adaptation: Decrease the learning rate and the neighborhood function
+ * 5. Repeat steps 2-4 until convergence or max_iter
 */
 void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int height, int width, int max_iter, float lr, float sigma){
-    
+    // Initialize the weights with some small random numbers
+    double weights[height][width][m_features];
+    for(int i=0; i<height; i++){
+        for(int j=0; j<width; j++){
+            for(int k=0; k<m_features; k++){
+                weights[i][j][k] = (rand() % 100) / 100.0;
+            }
+        }
+    }
+
+    // Competition: Each input will find its best matching unit using the Euclidean distance
+    for(int iter=0; iter<max_iter; iter++){
+        for(int i=0; i<n_samples; i++){
+            double min_dist = euclidean_distance(data + i*m_features, weights[0][0], m_features);
+            assignment[i].x = 0;
+            assignment[i].y = 0;
+            for(int j=0; j<height; j++){
+                for(int k=0; k<width; k++){
+                    double dist = euclidean_distance(data + i*m_features, weights[j][k], m_features);
+                    if(dist < min_dist){
+                        min_dist = dist;
+                        assignment[i].x = j;
+                        assignment[i].y = k;
+                    }
+                }
+            }
+
+            // Cooperation: Update the weights of the best matching unit and its neighbors
+            for(int j=0; j<height; j++){
+                for(int k=0; k<width; k++){
+                    double dist = (j - assignment[i].x) * (j - assignment[i].x) + (k - assignment[i].y) * (k - assignment[i].y);
+                    double h = exp(-dist / (2 * sigma * sigma));
+                    for(int l=0; l<m_features; l++){
+                        weights[j][k][l] += lr * h * (data[i*m_features + l] - weights[j][k][l]);
+                    }
+                }
+            }
+        }
+
+        // Adaptation: Decrease the learning rate and the neighborhood function
+        lr *= 0.9;
+        sigma *= 0.9;
+    }
 }
 
 
@@ -135,6 +184,21 @@ int main(){
     cout << "K-means assignment: ";
     for(int i=0; i<n_samples; i++){
         cout << assignment[i] << " ";
+    }
+    cout << endl;
+
+    // Test the SOM function
+    int height = 2;
+    int width = 2;
+    max_iter = 100;
+    float lr = 0.1;
+    float sigma = 1.0;
+    t_pos assignment2[10];
+    // The result should be [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)]
+    SOM(assignment2, data, n_samples, m_features, height, width, max_iter, lr, sigma);
+    cout << "SOM assignment: ";
+    for(int i=0; i<n_samples; i++){
+        cout << "(" << assignment2[i].x << ", " << assignment2[i].y << ") ";
     }
     cout << endl;
 
