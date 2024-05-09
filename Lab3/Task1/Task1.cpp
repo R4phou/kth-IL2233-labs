@@ -1,4 +1,10 @@
 #include <cmath>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <random>
+
+using namespace std;
 
 // Task 1: Implement and evaluate K-means and SOM
 
@@ -15,7 +21,6 @@ double euclidean_distance(double *a, double *b, int m_features){
     for(int i=0; i<m_features; i++){
         dist += (a[i] - b[i]) * (a[i] - b[i]);
     }
-    dist = sqrt(dist);
     return dist;
 }
 
@@ -39,7 +44,8 @@ void kmeans(int* assignment, int K, int max_iter, int n_samples, int m_features,
     double centroids[K][m_features]; // Initialize an array of K centroids 
     for(int i=0; i<K; i++){
         for(int j=0; j<m_features; j++){
-            centroids[i][j] = data[i*m_features + j];
+            // i*m_features + j is the index of the j-th feature of the i-th sample
+            centroids[i][j] = data[i*m_features + j]; // Assign the first K samples as centroids
         }
     }
 
@@ -50,16 +56,21 @@ void kmeans(int* assignment, int K, int max_iter, int n_samples, int m_features,
 
     // Update the assignment
     for(int iter=0; iter<max_iter; iter++){
-
-
-        for(int i=0; i<n_samples; i++){ // Iterating over all samples
-            double min_dist = 1e9;
-            for(int j=0; j<K; j++){ // Iterating over all centroids
+        for(int i=0; i<n_samples; i++){
+            double min_dist = euclidean_distance(data + i*m_features, centroids[0], m_features);
+            assignment[i] = 0;
+            for(int j=1; j<K; j++){ // Find the nearest centroid and assign the sample to the corresponding cluster
                 double dist = euclidean_distance(data + i*m_features, centroids[j], m_features);
+                if(dist < min_dist){
+                    min_dist = dist;
+                    assignment[i] = j;
+                }
             }
         }
 
-        // Update the centroids - reset part
+        // Update the centroids
+
+        // Count the number of samples in each cluster
         int count[K];
         for(int i=0; i<K; i++){
             count[i] = 0;
@@ -68,15 +79,16 @@ void kmeans(int* assignment, int K, int max_iter, int n_samples, int m_features,
             }
         }
 
-        // Update the centroids - sum part
+        // Sum the samples in each cluster
         for(int i=0; i<n_samples; i++){
-            count[assignment[i]]++;
+            int cluster = assignment[i];
             for(int j=0; j<m_features; j++){
-                centroids[assignment[i]][j] += data[i*m_features + j];
+                centroids[cluster][j] += data[i*m_features + j];
             }
+            count[cluster]++;
         }
 
-        // Update the centroids - average part
+        // Divide by the number of samples in each cluster
         for(int i=0; i<K; i++){
             for(int j=0; j<m_features; j++){
                 centroids[i][j] /= count[i];
@@ -105,4 +117,26 @@ struct t_pos{
 */
 void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int height, int width, int max_iter, float lr, float sigma){
     
+}
+
+
+int main(){
+    // Test the kmeans function
+    int n_samples = 10;
+    int m_features = 2;
+    int K = 3;
+    int max_iter = 100;
+    double data[20] = {1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10};
+    int assignment[10];
+    // The result should be [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
+
+    // Print the assignment for kmeans
+    kmeans(assignment, K, max_iter, n_samples, m_features, data);
+    cout << "K-means assignment: ";
+    for(int i=0; i<n_samples; i++){
+        cout << assignment[i] << " ";
+    }
+    cout << endl;
+
+    return 0;
 }
