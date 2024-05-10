@@ -174,9 +174,9 @@ int main(){
     // Test the kmeans function
     int n_samples = 10;
     int m_features = 2;
-    int K = 3;
+    int K = 2;
     int max_iter = 100;
-    double data[20] = {1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10};
+    double data[20] = {1, 1, 2, 2, 3, 3, 4, 4, 4, 4,  7, 7, 7, 7, 8, 8, 9, 9, 10, 10};
     int assignment[10];
     // The result should be [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
 
