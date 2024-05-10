@@ -133,8 +133,8 @@ void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int hei
         }
     }
 
-    // Competition: Each input will find its best matching unit using the Euclidean distance
     for(int iter=0; iter<max_iter; iter++){
+        // Competition: Each input will find its best matching unit using the Euclidean distance
         for(int i=0; i<n_samples; i++){
             double min_dist = euclidean_distance(data + i*m_features, weights[0][0], m_features);
             assignment[i].x = 0;
@@ -149,6 +149,7 @@ void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int hei
                     }
                 }
             }
+            // Assigment are the BMU (Best Matching Unit) coordinates
 
             // Cooperation: Update the weights of the best matching unit and its neighbors
             for(int j=0; j<height; j++){
@@ -163,8 +164,8 @@ void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int hei
         }
 
         // Adaptation: Decrease the learning rate and the neighborhood function
-        lr *= 0.9;
-        sigma *= 0.9;
+        lr *= exp(iter/(max_iter-1));
+        sigma *= exp(iter/(max_iter-1));
     }
 }
 
