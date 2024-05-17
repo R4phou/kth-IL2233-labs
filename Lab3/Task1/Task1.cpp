@@ -123,6 +123,8 @@ struct t_pos{
  * 5. Repeat steps 2-4 until convergence or max_iter
 */
 void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int height, int width, int max_iter, float lr, float sigma){
+    double prev_weights[height][width][m_features];
+    
     // Initialize the weights with some small random numbers
     double weights[height][width][m_features];
     for(int i=0; i<height; i++){
@@ -134,6 +136,8 @@ void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int hei
     }
 
     for(int iter=0; iter<max_iter; iter++){
+        prev_weights[height][width][m_features] = weights[height][width][m_features];
+
         // Competition: Each input will find its best matching unit using the Euclidean distance
         for(int i=0; i<n_samples; i++){
             double min_dist = euclidean_distance(data + i*m_features, weights[0][0], m_features);
@@ -162,7 +166,10 @@ void SOM(t_pos *assignment, double *data, int n_samples, int m_features, int hei
                 }
             }
         }
-
+        
+        if (prev_weights == weights){
+            return;
+        }
         // Adaptation: Decrease the learning rate and the neighborhood function
         lr *= exp(iter/(max_iter-1));
         sigma *= exp(iter/(max_iter-1));
