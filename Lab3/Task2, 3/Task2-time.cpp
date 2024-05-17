@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <windows.h>
 #include <ctime>
 #include <algorithm>
 #include <random>
@@ -182,14 +183,21 @@ int main(){
     int max_iter = 100;
     double data[20] = {1, 1, 2, 2, 3, 3, 4, 4, 4, 4,  7, 7, 7, 7, 8, 8, 9, 9, 10, 10};
     int assignment[200] = {0};
+    LARGE_INTEGER nFreq;
+	LARGE_INTEGER nBeginTime;
+	LARGE_INTEGER nEndTime;
+	QueryPerformanceFrequency(&nFreq);
     // The result should be [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
 
     // Print the assignment for kmeans
     // kmeans(assignment, K, max_iter, n_samples, m_features, data);
+    QueryPerformanceCounter(&nBeginTime);
     kmeans(assignment, 3, max_iter, 150, 4, iris);            // Iris
     // kmeans(assignment, 3, max_iter, 30, 3, BME);                 // BME
+    QueryPerformanceCounter(&nEndTime);
+    cout << "K-means assignment: " << (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / (double)nFreq.QuadPart  << "us" << endl;
     for(int i=0; i<n_samples; i++){
-        cout << assignment[i] << ", ";
+        cout << assignment[i] << " ";
     }
     cout << endl;
 
@@ -202,8 +210,11 @@ int main(){
     t_pos assignment2[200];
     // The result should be [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)]
     // SOM(assignment2, data, n_samples, m_features, height, width, max_iter, lr, sigma);
+    DWORD sstart = GetTickCount();
     SOM(assignment2, iris, 150, 4, 8, 8, max_iter, lr, sigma);     // Iris
     // SOM(assignment2, BME, 30, 3, 8, 8, max_iter, lr, sigma);          // BME
+    DWORD send = GetTickCount();
+    cout << "SOM assignment: " << send - sstart << "ms" << endl;
     for(int i=0; i<n_samples; i++){
         cout << "(" << assignment2[i].x << ", " << assignment2[i].y << ") ";
     }
